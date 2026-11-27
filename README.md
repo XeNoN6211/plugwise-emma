@@ -57,7 +57,7 @@ homey app validate
 
 ### 1.0.2 (2026-11-27)
 - Use the Emma Wired product photo on a blue background (#489fdf, the brand color of Plugwise's own Homey app) for the app images (250x175, 500x350, 1000x700) and the driver images (75x75, 500x500, 1000x1000)
-- Redesign `assets/icon.svg` as a 3D, full-color Emma-style icon (gradients, shadow, display with temperature and flame, text converted to paths so no fonts are needed)
+- Redesign `assets/icon.svg`: evenly spaced dial ticks and a flame, paths only (no font-dependent text)
 - Bump version to 1.0.2 (`.homeycompose/app.json`, `package.json`, `package-lock.json`) and add a 1.0.2 entry to `.homeychangelog.json`
 
 ### 1.0.1 (2026-11-27)
