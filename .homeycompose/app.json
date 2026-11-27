@@ -26,5 +26,13 @@
   "author": {
     "name": "Dennis Smink",
     "email": "dennissmink@gmail.com"
+  },
+  "contributors": {
+    "developers": [
+      {
+        "name": "Paul Persoon-van Klooster",
+        "email": "paul@paulendiana.nl"
+      }
+    ]
   }
 }
