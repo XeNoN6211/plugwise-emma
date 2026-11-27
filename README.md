@@ -56,8 +56,7 @@ homey app validate
 ## Changelog
 
 ### 1.0.2 (2026-11-27)
-- Use the Emma Wired product photo for the large and xlarge app images (500x350, 1000x700) and driver images (500x500, 1000x1000)
-- Use a drawn Emma-style thermostat icon (round body, emma wordmark, display with temperature and flame) for the small app image (250x175) and small driver image (75x75)
+- Use the Emma Wired product photo for the app images (250x175, 500x350, 1000x700) and the driver images (75x75, 500x500, 1000x1000)
 - Bump version to 1.0.2 (`.homeycompose/app.json`, `package.json`, `package-lock.json`) and add a 1.0.2 entry to `.homeychangelog.json`
 
 ### 1.0.1 (2026-11-27)
