@@ -1,5 +1,9 @@
 {
   "1.0.0": {
     "en": "First version!"
+  },
+  "1.0.1": {
+    "en": "Hide the battery capability on wired Emma units that have no battery, and fix battery percentage parsing.",
+    "nl": "Verberg de batterij-capability op bedrade Emma's zonder batterij en corrigeer het uitlezen van het batterijpercentage."
   }
 }

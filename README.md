@@ -55,5 +55,17 @@ homey app validate
 
 ## Changelog
 
-### 1.0.0
+### 1.0.1 (2026-11-27)
+- Fix: wired Emma units (powered via OpenTherm) no longer show a battery level of 0%. The battery capability is removed when the device reports no battery, and added back when it does
+- Fix: battery percentage is now converted correctly (0.5% steps) for both reads and reports, and the invalid value 255 is treated as unknown
+- Add Paul Persoon-van Klooster as contributor in the app manifest
+- Bump version to 1.0.1 (`.homeycompose/app.json`, `package.json`, `package-lock.json`) and add a 1.0.1 entry to `.homeychangelog.json`
+- Update README: battery description, changelog and authors
+
+### 1.0.0 (initial release)
 - Initial release with Emma Wired thermostat support
+
+## Authors
+
+- Dennis Smink
+- Paul Persoon-van Klooster
