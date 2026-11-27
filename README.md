@@ -55,5 +55,15 @@ homey app validate
 
 ## Changelog
 
+### 1.0.1
+- Hide the battery capability on wired Emma units that have no battery (no more 0%)
+- Fix battery percentage parsing for reads and reports
+- Add Paul Persoon-van Klooster as contributor
+
 ### 1.0.0
 - Initial release with Emma Wired thermostat support
+
+## Authors
+
+- Dennis Smink
+- Paul Persoon-van Klooster
