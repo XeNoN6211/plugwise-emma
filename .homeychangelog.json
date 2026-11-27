@@ -5,5 +5,9 @@
   "1.0.1": {
     "en": "Hide the battery capability on wired Emma units that have no battery, and fix battery percentage parsing.",
     "nl": "Verberg de batterij-capability op bedrade Emma's zonder batterij en corrigeer het uitlezen van het batterijpercentage."
+  },
+  "1.0.2": {
+    "en": "New Emma Wired product photo for the app and driver images.",
+    "nl": "Nieuwe productfoto van de Emma Wired voor de app- en driverafbeeldingen."
   }
 }
