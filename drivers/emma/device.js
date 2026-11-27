@@ -25,6 +25,12 @@ function parseSystemMode(value) {
   return map[value] || null;
 }
 
+// Zigbee reports battery percentage in 0.5% steps; 255 (0xFF) means invalid/unknown.
+function parseBatteryPercentage(value) {
+  if (typeof value !== 'number' || value < 0 || value === 255) return null;
+  return Math.min(100, Math.round(value / 2));
+}
+
 class EmmaDevice extends ZigBeeDevice {
 
   async onNodeInit({ zclNode }) {
@@ -44,6 +50,9 @@ class EmmaDevice extends ZigBeeDevice {
 
     // Read initial state in the background
     this._readInitialState().catch((err) => this.error('Failed to read initial state', err));
+
+    // Remove the battery capability on wired units that have no battery
+    this._updateBatterySupport().catch((err) => this.error('Failed to update battery support', err));
   }
 
   _registerTargetTemperature() {
@@ -170,15 +179,52 @@ class EmmaDevice extends ZigBeeDevice {
 
     this.registerCapability('measure_battery', CLUSTER.POWER_CONFIGURATION, {
       get: 'batteryPercentageRemaining',
-      reportParser(value) {
-        return Math.round(value / 2);
-      },
+      getParser: parseBatteryPercentage,
+      reportParser: parseBatteryPercentage,
       report: 'batteryPercentageRemaining',
       getOpts: {
         getOnStart: true,
         getOnOnline: true,
       },
     });
+  }
+
+  // A wired Emma (powered via OpenTherm) has no battery and reports 0% or an
+  // invalid value. Remove the battery capability in that case, and add it back
+  // when the device does report a real battery.
+  async _updateBatterySupport() {
+    let attrs;
+    try {
+      const endpoint = this.getClusterEndpoint(CLUSTER.POWER_CONFIGURATION);
+      if (endpoint === undefined || endpoint === null) return;
+
+      attrs = await this.zclNode
+        .endpoints[endpoint]
+        .clusters[CLUSTER.POWER_CONFIGURATION.NAME]
+        .readAttributes(['batteryPercentageRemaining', 'batteryVoltage']);
+    } catch (err) {
+      // Device unreachable or attribute unsupported: keep the current state.
+      this.error('Failed to read battery attributes', err);
+      return;
+    }
+
+    const percentage = parseBatteryPercentage(attrs.batteryPercentageRemaining);
+    const voltage = attrs.batteryVoltage;
+    const hasVoltage = typeof voltage === 'number' && voltage > 0 && voltage < 255;
+    const hasBattery = (percentage !== null && percentage > 0) || hasVoltage;
+
+    if (!hasBattery && this.hasCapability('measure_battery')) {
+      this.log('No battery reported (wired power), removing measure_battery');
+      await this.removeCapability('measure_battery');
+    } else if (hasBattery && !this.hasCapability('measure_battery')) {
+      this.log('Battery reported, adding measure_battery');
+      await this.addCapability('measure_battery');
+      this._registerMeasureBattery();
+    }
+
+    if (hasBattery && percentage !== null) {
+      await this.setCapabilityValue('measure_battery', percentage);
+    }
   }
 
   _configureReporting() {

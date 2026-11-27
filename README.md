@@ -16,7 +16,7 @@ The Emma is a smart wired thermostat that connects via Zigbee and controls your 
 - **Current temperature** - Read the room temperature from the built-in sensor
 - **Humidity** - Read relative humidity
 - **Thermostat mode** - Switch between Off, Heat, and Cool
-- **Battery level** - Monitor battery percentage (when not powered via OpenTherm)
+- **Battery level** - Monitor battery percentage. Wired units without a battery (powered via OpenTherm) automatically hide this capability instead of showing 0%
 - **Temperature calibration** - Adjust the temperature sensor offset (-2.5 to +2.5 °C)
 
 Heating and cooling use separate setpoints, so switching modes will show the corresponding target temperature.
