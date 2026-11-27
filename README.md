@@ -55,6 +55,10 @@ homey app validate
 
 ## Changelog
 
+### 1.0.2 (2026-11-27)
+- Use the Emma Wired product photo for the app images (250x175, 500x350, 1000x700) and the driver images (75x75, 500x500, 1000x1000)
+- Bump version to 1.0.2 (`.homeycompose/app.json`, `package.json`, `package-lock.json`) and add a 1.0.2 entry to `.homeychangelog.json`
+
 ### 1.0.1 (2026-11-27)
 - Fix: wired Emma units (powered via OpenTherm) no longer show a battery level of 0%. The battery capability is removed when the device reports no battery, and added back when it does
 - Fix: battery percentage is now converted correctly (0.5% steps) for both reads and reports, and the invalid value 255 is treated as unknown
