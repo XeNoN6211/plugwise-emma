@@ -8,8 +8,7 @@
     "target_temperature",
     "measure_temperature",
     "measure_humidity",
-    "thermostat_mode",
-    "measure_battery"
+    "thermostat_mode"
   ],
   "capabilitiesOptions": {
     "target_temperature": {
@@ -28,9 +27,6 @@
   "images": {
     "small": "{{driverAssetsPath}}/images/small.png",
     "large": "{{driverAssetsPath}}/images/large.png"
-  },
-  "energy": {
-    "batteries": ["AA", "AA"]
   },
   "zigbee": {
     "manufacturerName": "Plugwise",

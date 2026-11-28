@@ -43,7 +43,6 @@ class EmmaDevice extends ZigBeeDevice {
     this._registerMeasureTemperature();
     this._registerMeasureHumidity();
     this._registerThermostatMode();
-    this._registerMeasureBattery();
 
     // Configure attribute reporting in the background (don't block init)
     this._configureReporting();
@@ -51,7 +50,7 @@ class EmmaDevice extends ZigBeeDevice {
     // Read initial state in the background
     this._readInitialState().catch((err) => this.error('Failed to read initial state', err));
 
-    // Remove the battery capability on wired units that have no battery
+    // Add the battery capability only on units that really have a battery
     this._updateBatterySupport().catch((err) => this.error('Failed to update battery support', err));
   }
 
@@ -175,7 +174,8 @@ class EmmaDevice extends ZigBeeDevice {
   }
 
   _registerMeasureBattery() {
-    if (!this.hasCapability('measure_battery')) return;
+    if (this._batteryRegistered || !this.hasCapability('measure_battery')) return;
+    this._batteryRegistered = true;
 
     this.registerCapability('measure_battery', CLUSTER.POWER_CONFIGURATION, {
       get: 'batteryPercentageRemaining',
@@ -190,8 +190,10 @@ class EmmaDevice extends ZigBeeDevice {
   }
 
   // A wired Emma (powered via OpenTherm) has no battery and reports 0% or an
-  // invalid value. Remove the battery capability in that case, and add it back
-  // when the device does report a real battery.
+  // invalid value. The battery capability is not part of the driver manifest, so
+  // a wired unit never shows "battery empty" while pairing. It is only added when
+  // the device reports a real battery, and removed again from older pairings
+  // that still have it.
   async _updateBatterySupport() {
     let attrs;
     try {
@@ -205,6 +207,8 @@ class EmmaDevice extends ZigBeeDevice {
     } catch (err) {
       // Device unreachable or attribute unsupported: keep the current state.
       this.error('Failed to read battery attributes', err);
+      // Older pairings that already have the capability keep working as before.
+      this._registerMeasureBattery();
       return;
     }
 
@@ -213,16 +217,23 @@ class EmmaDevice extends ZigBeeDevice {
     const hasVoltage = typeof voltage === 'number' && voltage > 0 && voltage < 255;
     const hasBattery = (percentage !== null && percentage > 0) || hasVoltage;
 
-    if (!hasBattery && this.hasCapability('measure_battery')) {
-      this.log('No battery reported (wired power), removing measure_battery');
-      await this.removeCapability('measure_battery');
-    } else if (hasBattery && !this.hasCapability('measure_battery')) {
-      this.log('Battery reported, adding measure_battery');
-      await this.addCapability('measure_battery');
-      this._registerMeasureBattery();
+    if (!hasBattery) {
+      if (this.hasCapability('measure_battery')) {
+        this.log('No battery reported (wired power), removing measure_battery');
+        await this.removeCapability('measure_battery');
+      }
+      return;
     }
 
-    if (hasBattery && percentage !== null) {
+    if (!this.hasCapability('measure_battery')) {
+      this.log('Battery reported, adding measure_battery');
+      await this.addCapability('measure_battery');
+    }
+    await this.setEnergy({ batteries: ['AA', 'AA'] })
+      .catch((err) => this.error('Failed to set batteries', err));
+    this._registerMeasureBattery();
+
+    if (percentage !== null) {
       await this.setCapabilityValue('measure_battery', percentage);
     }
   }
