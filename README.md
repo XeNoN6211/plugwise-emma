@@ -55,6 +55,11 @@ homey app validate
 
 ## Changelog
 
+### 1.0.3 (2026-11-28)
+- Fix: add the missing driver icon (`drivers/emma/assets/icon.svg`), so the icon shows when adding a device
+- Fix: no more "battery empty" message while adding a wired Emma. `measure_battery` and the AA batteries are no longer in the driver manifest. The capability is only added (and the batteries set) after the Emma reports a real battery, and older pairings that still have it lose it when no battery is reported
+- Bump version to 1.0.3 and add a 1.0.3 entry to `.homeychangelog.json`
+
 ### 1.0.2 (2026-11-27)
 - Use the Emma Wired product photo on a blue background (#489fdf, the brand color of Plugwise's own Homey app) for the app images (250x175, 500x350, 1000x700) and the driver images (75x75, 500x500, 1000x1000)
 - Clean up `assets/icon.svg`: evenly spaced dial ticks, text converted to paths (no fonts needed), same look as before
