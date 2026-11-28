@@ -1,0 +1,53 @@
+name: Release
+
+# Creates a GitHub release with a versioned zip (plugwise-emma-<version>.zip)
+# whenever main contains a version that has no release yet.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read version
+        id: version
+        run: echo "version=$(node -p "require('./.homeycompose/app.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Check if release exists
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "v${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build zip
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          V="${{ steps.version.outputs.version }}"
+          mkdir "plugwise-emma-$V"
+          git archive HEAD | tar -x -C "plugwise-emma-$V"
+          rm -rf "plugwise-emma-$V/.github"
+          zip -rq "plugwise-emma-$V.zip" "plugwise-emma-$V"
+
+      - name: Create release
+        if: steps.check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V="${{ steps.version.outputs.version }}"
+          NOTES=$(node -p "const c=require('./.homeychangelog.json')['$V']; c ? c.en : 'Release $V'")
+          gh release create "v$V" "plugwise-emma-$V.zip" \
+            --target "${{ github.sha }}" \
+            --title "v$V" \
+            --notes "$NOTES"
