@@ -16,11 +16,9 @@ FEATURES
 HOW TO ADD YOUR EMMA
 1. In the Homey app, go to Devices, then Add Device, and choose Plugwise.
 2. Select Emma Wired.
-3. Put the Emma in pairing mode:
-   - Press and hold the button on the back for 3 seconds, then release.
-   - Within 1 second, press and hold it for 3 seconds again, then release.
-   - Within 1 second, press and hold it for 10 seconds, then release.
-4. The LED starts blinking. The Emma is now ready to pair and Homey will find it.
+3. Make sure Homey is searching for new devices.
+4. On the Emma, press and hold the top button for 5 seconds, then release it.
+5. The Emma pairs with your Homey. This can take a few moments, so keep the Emma close to your Homey.
 
 REQUIREMENTS
 - A Homey with Zigbee (Homey Pro or a Homey Self-Hosted Server with a Zigbee connection)

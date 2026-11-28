@@ -25,11 +25,9 @@ Heating and cooling use separate setpoints, so switching modes will show the cor
 
 1. Open the Homey app and navigate to **Devices > Add Device > Plugwise**
 2. Select **Emma Wired**
-3. Put the Emma in pairing mode:
-   - Press and hold the button on the back for 3 seconds, then release
-   - Within 1 second, press and hold for 3 seconds again, then release
-   - Within 1 second, press and hold for 10 seconds, then release
-4. The LED will blink, indicating the Emma is ready to pair
+3. Make sure Homey is searching for new devices
+4. On the Emma, press and hold the **top button for 5 seconds**, then release it
+5. The Emma pairs with your Homey. This can take a few moments, so keep the Emma close to your Homey
 
 ## Development
 
@@ -54,6 +52,10 @@ homey app validate
 ```
 
 ## Changelog
+
+### 1.0.5 (2026-11-28)
+- Fix: corrected the pairing instructions in the driver, README.md and the store descriptions. Press and hold the top button of the Emma for 5 seconds to pair with Homey
+- Bump version to 1.0.5 and add a 1.0.5 entry to `.homeychangelog.json`
 
 ### 1.0.4 (2026-11-28)
 - Rename the app from `Plugwise` to `Plugwise Emma`

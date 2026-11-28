@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "nl.xenon62.plugwise",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "compatibility": ">=12.4.0",
   "sdk": 3,
   "platforms": [
@@ -109,8 +109,8 @@
         },
         "learnmode": {
           "instruction": {
-            "en": "To pair the Emma thermostat:\n\n1. Press and hold the button on the back of the Emma for 3 seconds and release.\n2. Within 1 second, press and hold the button for 3 seconds again and release.\n3. Within 1 second, press and hold the button for 10 seconds and release.\n\nThe LED will start blinking, indicating the Emma is ready to pair.",
-            "nl": "Om de Emma thermostaat te koppelen:\n\n1. Houd de knop aan de achterkant van de Emma 3 seconden ingedrukt en laat los.\n2. Druk binnen 1 seconde opnieuw de knop 3 seconden in en laat los.\n3. Druk binnen 1 seconde de knop 10 seconden in en laat los.\n\nDe LED begint te knipperen, wat aangeeft dat de Emma klaar is om te koppelen."
+            "en": "To add your Emma:\n\n1. Make sure your Homey is searching for new devices.\n2. On the Emma, press and hold the top button for 5 seconds.\n3. Release the button. The Emma now pairs with your Homey.\n\nThis can take a few moments. Keep the Emma close to your Homey while pairing.",
+            "nl": "Om je Emma toe te voegen:\n\n1. Zorg dat je Homey zoekt naar nieuwe apparaten.\n2. Houd op de Emma de bovenste knop 5 seconden ingedrukt.\n3. Laat de knop los. De Emma koppelt nu met je Homey.\n\nDit kan even duren. Houd de Emma tijdens het koppelen dicht bij je Homey."
           }
         }
       },
