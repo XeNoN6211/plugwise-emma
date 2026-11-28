@@ -59,6 +59,7 @@ homey app validate
 - Use the Emma Wired product photo on a blue background (#489fdf, the brand color of Plugwise's own Homey app) for the app images (250x175, 500x350, 1000x700) and the driver images (75x75, 500x500, 1000x1000)
 - Clean up `assets/icon.svg`: evenly spaced dial ticks, text converted to paths (no fonts needed), same look as before
 - Remove the outdated `CLAUDE.md` (it still said that no drivers existed)
+- Add `README.txt` and `README.nl.txt` (plain text, no markdown) for the Homey App Store listing
 - Bump version to 1.0.2 (`.homeycompose/app.json`, `package.json`, `package-lock.json`) and add a 1.0.2 entry to `.homeychangelog.json`
 
 ### 1.0.1 (2026-11-27)
