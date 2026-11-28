@@ -3,12 +3,11 @@
   "version": "1.0.3",
   "main": "app.js",
   "scripts": {
-    "lint": "eslint --ext .js,.ts --ignore-path .gitignore ."
+    "lint": "eslint ."
   },
   "devDependencies": {
     "@types/homey": "npm:homey-apps-sdk-v3-types@^0.3.12",
-    "eslint": "^7.32.0",
-    "eslint-config-athom": "^3.1.5"
+    "eslint": "^9.0.0"
   },
   "dependencies": {
     "homey-zigbeedriver": "^2.2.17",
