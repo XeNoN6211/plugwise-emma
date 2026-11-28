@@ -16,11 +16,9 @@ FUNCTIES
 JE EMMA TOEVOEGEN
 1. Ga in de Homey-app naar Apparaten, dan Apparaat toevoegen, en kies Plugwise.
 2. Selecteer Emma Wired.
-3. Zet de Emma in koppelmodus:
-   - Houd de knop aan de achterkant 3 seconden ingedrukt en laat los.
-   - Houd de knop binnen 1 seconde opnieuw 3 seconden ingedrukt en laat los.
-   - Houd de knop binnen 1 seconde 10 seconden ingedrukt en laat los.
-4. De LED begint te knipperen. De Emma is nu klaar om te koppelen en Homey vindt hem.
+3. Zorg dat Homey zoekt naar nieuwe apparaten.
+4. Houd op de Emma de bovenste knop 5 seconden ingedrukt en laat los.
+5. De Emma koppelt met je Homey. Dit kan even duren, houd de Emma daarom dicht bij je Homey.
 
 VEREISTEN
 - Een Homey met Zigbee (Homey Pro of een Homey Self-Hosted Server met een Zigbee-verbinding)

@@ -17,5 +17,9 @@
   "1.0.4": {
     "en": "Renamed the app to Plugwise Emma, Plugwise blue as app color, cleaned-up code and updated development tooling (ESLint 9).",
     "nl": "App hernoemd naar Plugwise Emma, Plugwise-blauw als appkleur, opgeschoonde code en bijgewerkte ontwikkeltools (ESLint 9)."
+  },
+  "1.0.5": {
+    "en": "Fix: corrected the pairing instructions. Press and hold the top button of the Emma for 5 seconds to pair.",
+    "nl": "Fix: koppelinstructie aangepast. Houd de bovenste knop van de Emma 5 seconden ingedrukt om te koppelen."
   }
 }
