@@ -13,5 +13,9 @@
   "1.0.3": {
     "en": "Fix: add the missing driver icon, and no more \"battery empty\" message when adding a wired Emma. The battery is only added when the Emma really has one.",
     "nl": "Fix: ontbrekend driver-icoon toegevoegd en geen melding \"batterij leeg\" meer bij het toevoegen van een bedrade Emma. De batterij wordt alleen toegevoegd als de Emma er echt een heeft."
+  },
+  "1.0.4": {
+    "en": "Renamed the app to Plugwise Emma, Plugwise blue as app color, cleaned-up code and updated development tooling (ESLint 9).",
+    "nl": "App hernoemd naar Plugwise Emma, Plugwise-blauw als appkleur, opgeschoonde code en bijgewerkte ontwikkeltools (ESLint 9)."
   }
 }
