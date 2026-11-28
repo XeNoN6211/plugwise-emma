@@ -60,6 +60,7 @@ homey app validate
 - Clean up `assets/icon.svg`: evenly spaced dial ticks, text converted to paths (no fonts needed), same look as before
 - Remove the outdated `CLAUDE.md` (it still said that no drivers existed)
 - Add `README.txt` and `README.nl.txt` (plain text, no markdown) for the Homey App Store listing
+- Change the app ID from `nl.webbuilds.plugwise` to `nl.paulendiana.plugwise`. This is a different app on Homey, so re-pair the Emma and remove the old app
 - Bump version to 1.0.2 (`.homeycompose/app.json`, `package.json`, `package-lock.json`) and add a 1.0.2 entry to `.homeychangelog.json`
 
 ### 1.0.1 (2026-11-27)
