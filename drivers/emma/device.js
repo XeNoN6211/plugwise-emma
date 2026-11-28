@@ -10,19 +10,34 @@ const SYSTEM_MODE = {
   heat: 4,
 };
 
+const SYSTEM_MODE_NAMES = {
+  0: 'off',
+  1: 'auto',
+  3: 'cool',
+  4: 'heat',
+};
+
+const HEATING_SETPOINT = 'occupiedHeatingSetpoint';
+const COOLING_SETPOINT = 'occupiedCoolingSetpoint';
+
 // Maps both numeric and string values from the Zigbee cluster to Homey mode strings
 function parseSystemMode(value) {
   if (typeof value === 'string') {
     // zigbee-clusters returns enum strings like 'cool', 'heat', 'off'
-    if (value === 'off' || value === 'heat' || value === 'cool' || value === 'auto') {
-      return value;
-    }
+    return Object.prototype.hasOwnProperty.call(SYSTEM_MODE, value) ? value : null;
   }
   // Numeric values from readAttributes
-  const map = {
-    0: 'off', 1: 'auto', 3: 'cool', 4: 'heat',
-  };
-  return map[value] || null;
+  return SYSTEM_MODE_NAMES[value] || null;
+}
+
+// Zigbee reports temperatures in 0.01 °C; Homey shows them with 0.1 °C precision.
+function parseTemperature(value) {
+  return Math.round((value / 100) * 10) / 10;
+}
+
+// Zigbee reports relative humidity in 0.01 %; Homey shows whole percentages.
+function parseHumidity(value) {
+  return Math.round(value / 100);
 }
 
 // Zigbee reports battery percentage in 0.5% steps; 255 (0xFF) means invalid/unknown.
@@ -30,6 +45,11 @@ function parseBatteryPercentage(value) {
   if (typeof value !== 'number' || value < 0 || value === 255) return null;
   return Math.min(100, Math.round(value / 2));
 }
+
+const REPORTING_OPTS = {
+  getOnStart: true,
+  getOnOnline: true,
+};
 
 class EmmaDevice extends ZigBeeDevice {
 
@@ -54,63 +74,66 @@ class EmmaDevice extends ZigBeeDevice {
     this._updateBatterySupport().catch((err) => this.error('Failed to update battery support', err));
   }
 
+  // The thermostat cluster of this device. Throws when the endpoint is not available.
+  _getThermostatCluster() {
+    const endpoint = this.getClusterEndpoint(CLUSTER.THERMOSTAT);
+    if (endpoint === undefined || endpoint === null) {
+      throw new Error('Thermostat cluster endpoint not found');
+    }
+    return this.zclNode.endpoints[endpoint].clusters[CLUSTER.THERMOSTAT.NAME];
+  }
+
+  // Heating and cooling use separate setpoints; this is the one for the current mode.
+  _getActiveSetpointAttribute() {
+    return this._currentMode === 'cool' ? COOLING_SETPOINT : HEATING_SETPOINT;
+  }
+
+  // Stores a mode reported by the device and returns the value for the capability.
+  _parseMode(value) {
+    const mode = parseSystemMode(value);
+    if (mode) {
+      this._currentMode = mode;
+    }
+    return mode || 'heat';
+  }
+
   _registerTargetTemperature() {
     this.registerCapability('target_temperature', CLUSTER.THERMOSTAT, {
-      set: 'occupiedHeatingSetpoint',
-      setParser(value) {
-        const attribute = this._currentMode === 'cool'
-          ? 'occupiedCoolingSetpoint'
-          : 'occupiedHeatingSetpoint';
-
-        this.zclNode.endpoints[this.getClusterEndpoint(CLUSTER.THERMOSTAT)]
-          .clusters[CLUSTER.THERMOSTAT.NAME]
-          .writeAttributes({ [attribute]: Math.round(value * 100) })
+      set: HEATING_SETPOINT,
+      setParser: (value) => {
+        this._getThermostatCluster()
+          .writeAttributes({ [this._getActiveSetpointAttribute()]: Math.round(value * 100) })
           .catch((err) => this.error('Failed to write setpoint', err));
 
         return null;
       },
-      get: 'occupiedHeatingSetpoint',
-      getParser(value) {
-        return Math.round((value / 100) * 10) / 10;
-      },
-      reportParser(value) {
-        return Math.round((value / 100) * 10) / 10;
-      },
-      report: 'occupiedHeatingSetpoint',
-      getOpts: {
-        getOnStart: true,
-        getOnOnline: true,
-      },
+      get: HEATING_SETPOINT,
+      getParser: parseTemperature,
+      reportParser: parseTemperature,
+      report: HEATING_SETPOINT,
+      getOpts: REPORTING_OPTS,
     });
 
     // Also listen for cooling setpoint reports
-    const thermostatEndpoint = this.getClusterEndpoint(CLUSTER.THERMOSTAT);
-    if (thermostatEndpoint !== undefined) {
-      this.zclNode.endpoints[thermostatEndpoint]
-        .clusters[CLUSTER.THERMOSTAT.NAME]
-        .on('attr.occupiedCoolingSetpoint', (value) => {
-          if (this._currentMode === 'cool') {
-            this.setCapabilityValue('target_temperature', Math.round((value / 100) * 10) / 10)
-              .catch((err) => this.error('Failed to set cooling target_temperature', err));
-          }
-        });
+    try {
+      this._getThermostatCluster().on(`attr.${COOLING_SETPOINT}`, (value) => {
+        if (this._currentMode === 'cool') {
+          this.setCapabilityValue('target_temperature', parseTemperature(value))
+            .catch((err) => this.error('Failed to set cooling target_temperature', err));
+        }
+      });
+    } catch (err) {
+      this.error('Failed to listen for cooling setpoint reports', err);
     }
   }
 
   _registerMeasureTemperature() {
     this.registerCapability('measure_temperature', CLUSTER.THERMOSTAT, {
       get: 'localTemperature',
-      getParser(value) {
-        return Math.round((value / 100) * 10) / 10;
-      },
-      reportParser(value) {
-        return Math.round((value / 100) * 10) / 10;
-      },
+      getParser: parseTemperature,
+      reportParser: parseTemperature,
       report: 'localTemperature',
-      getOpts: {
-        getOnStart: true,
-        getOnOnline: true,
-      },
+      getOpts: REPORTING_OPTS,
     });
   }
 
@@ -119,57 +142,31 @@ class EmmaDevice extends ZigBeeDevice {
 
     this.registerCapability('measure_humidity', CLUSTER.RELATIVE_HUMIDITY_MEASUREMENT, {
       get: 'measuredValue',
-      reportParser(value) {
-        return Math.round(value / 100);
-      },
+      getParser: parseHumidity,
+      reportParser: parseHumidity,
       report: 'measuredValue',
-      getOpts: {
-        getOnStart: true,
-        getOnOnline: true,
-      },
+      getOpts: REPORTING_OPTS,
     });
   }
 
   _registerThermostatMode() {
     this.registerCapability('thermostat_mode', CLUSTER.THERMOSTAT, {
       set: 'systemMode',
-      setParser(value) {
-        const systemMode = SYSTEM_MODE[value];
+      setParser: (value) => {
         this._currentMode = value;
 
-        this.zclNode.endpoints[this.getClusterEndpoint(CLUSTER.THERMOSTAT)]
-          .clusters[CLUSTER.THERMOSTAT.NAME]
-          .writeAttributes({ systemMode })
-          .then(() => {
-            if (value !== 'off') {
-              return this._readActiveSetpoint();
-            }
-            return null;
-          })
+        this._getThermostatCluster()
+          .writeAttributes({ systemMode: SYSTEM_MODE[value] })
+          .then(() => (value !== 'off' ? this._readActiveSetpoint() : null))
           .catch((err) => this.error('Failed to write systemMode', err));
 
         return null;
       },
       get: 'systemMode',
-      getParser(value) {
-        const mode = parseSystemMode(value);
-        if (mode) {
-          this._currentMode = mode;
-        }
-        return mode || 'heat';
-      },
-      reportParser(value) {
-        const mode = parseSystemMode(value);
-        if (mode) {
-          this._currentMode = mode;
-        }
-        return mode || 'heat';
-      },
+      getParser: (value) => this._parseMode(value),
+      reportParser: (value) => this._parseMode(value),
       report: 'systemMode',
-      getOpts: {
-        getOnStart: true,
-        getOnOnline: true,
-      },
+      getOpts: REPORTING_OPTS,
     });
   }
 
@@ -182,10 +179,7 @@ class EmmaDevice extends ZigBeeDevice {
       getParser: parseBatteryPercentage,
       reportParser: parseBatteryPercentage,
       report: 'batteryPercentageRemaining',
-      getOpts: {
-        getOnStart: true,
-        getOnOnline: true,
-      },
+      getOpts: REPORTING_OPTS,
     });
   }
 
@@ -243,7 +237,7 @@ class EmmaDevice extends ZigBeeDevice {
       {
         endpointId: 1,
         cluster: CLUSTER.THERMOSTAT,
-        attributeName: 'occupiedHeatingSetpoint',
+        attributeName: HEATING_SETPOINT,
         minInterval: 0,
         maxInterval: 300,
         minChange: 10,
@@ -251,7 +245,7 @@ class EmmaDevice extends ZigBeeDevice {
       {
         endpointId: 1,
         cluster: CLUSTER.THERMOSTAT,
-        attributeName: 'occupiedCoolingSetpoint',
+        attributeName: COOLING_SETPOINT,
         minInterval: 0,
         maxInterval: 300,
         minChange: 10,
@@ -273,14 +267,10 @@ class EmmaDevice extends ZigBeeDevice {
 
   async _readInitialState() {
     try {
-      const thermostatCluster = this.zclNode
-        .endpoints[this.getClusterEndpoint(CLUSTER.THERMOSTAT)]
-        .clusters[CLUSTER.THERMOSTAT.NAME];
-
-      const attrs = await thermostatCluster.readAttributes([
+      const attrs = await this._getThermostatCluster().readAttributes([
         'systemMode',
-        'occupiedHeatingSetpoint',
-        'occupiedCoolingSetpoint',
+        HEATING_SETPOINT,
+        COOLING_SETPOINT,
       ]);
 
       if (attrs.systemMode !== undefined) {
@@ -291,13 +281,9 @@ class EmmaDevice extends ZigBeeDevice {
         }
       }
 
-      const setpoint = this._currentMode === 'cool'
-        ? attrs.occupiedCoolingSetpoint
-        : attrs.occupiedHeatingSetpoint;
-
+      const setpoint = attrs[this._getActiveSetpointAttribute()];
       if (setpoint !== undefined) {
-        await this.setCapabilityValue('target_temperature',
-          Math.round((setpoint / 100) * 10) / 10);
+        await this.setCapabilityValue('target_temperature', parseTemperature(setpoint));
       }
     } catch (err) {
       this.error('Failed to read initial state', err);
@@ -306,35 +292,24 @@ class EmmaDevice extends ZigBeeDevice {
 
   async _readActiveSetpoint() {
     try {
-      const attribute = this._currentMode === 'cool'
-        ? 'occupiedCoolingSetpoint'
-        : 'occupiedHeatingSetpoint';
-
-      const thermostatCluster = this.zclNode
-        .endpoints[this.getClusterEndpoint(CLUSTER.THERMOSTAT)]
-        .clusters[CLUSTER.THERMOSTAT.NAME];
-
-      const result = await thermostatCluster.readAttributes([attribute]);
+      const attribute = this._getActiveSetpointAttribute();
+      const result = await this._getThermostatCluster().readAttributes([attribute]);
       const value = result[attribute];
 
       if (value !== undefined) {
-        await this.setCapabilityValue('target_temperature',
-          Math.round((value / 100) * 10) / 10);
+        await this.setCapabilityValue('target_temperature', parseTemperature(value));
       }
     } catch (err) {
       this.error('Failed to read active setpoint', err);
     }
   }
 
-  async onSettings({ oldSettings, newSettings, changedKeys }) {
+  async onSettings({ newSettings, changedKeys }) {
     if (changedKeys.includes('temperature_calibration')) {
       try {
-        await this.zclNode
-          .endpoints[this.getClusterEndpoint(CLUSTER.THERMOSTAT)]
-          .clusters[CLUSTER.THERMOSTAT.NAME]
-          .writeAttributes({
-            localTemperatureCalibration: Math.round(newSettings.temperature_calibration * 10),
-          });
+        await this._getThermostatCluster().writeAttributes({
+          localTemperatureCalibration: Math.round(newSettings.temperature_calibration * 10),
+        });
       } catch (err) {
         this.error('Failed to write temperature calibration', err);
       }
